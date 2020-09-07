@@ -40,11 +40,9 @@ enum class DataType {
 
 // Base struct of all fields
 struct Field {
-    uint64_t field_id;              ///< read-only
     std::string field_name;
     DataType field_type;
-    std::string index_params;
-    std::string extra_params;
+    int64_t dim;
 };
 using FieldPtr = std::shared_ptr<Field>;
 

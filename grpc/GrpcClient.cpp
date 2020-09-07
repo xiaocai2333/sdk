@@ -126,17 +126,17 @@ GrpcClient::Insert(const ::milvus::grpc::InsertParam& insert_param, ::milvus::gr
 
 Status
 GrpcClient::GetEntityByID(const grpc::EntityIdentity& entity_identity, ::milvus::grpc::Entities& entities) {
-//    ClientContext context;
-//    ::grpc::Status grpc_status = stub_->GetEntityByID(&context, entity_identity, &entities);
-//
-//    if (!grpc_status.ok()) {
-//        std::cerr << "GetEntityByID rpc failed!" << std::endl;
-//        return Status(StatusCode::RPCFailed, grpc_status.error_message());
-//    }
-//    if (entities.status().error_code() != grpc::SUCCESS) {
-//        std::cerr << entities.status().reason() << std::endl;
-//        return Status(StatusCode::ServerFailed, entities.status().reason());
-//    }
+    ClientContext context;
+    ::grpc::Status grpc_status = stub_->GetEntityByID(&context, entity_identity, &entities);
+
+    if (!grpc_status.ok()) {
+        std::cerr << "GetEntityByID rpc failed!" << std::endl;
+        return Status(StatusCode::RPCFailed, grpc_status.error_message());
+    }
+    if (entities.status().error_code() != grpc::SUCCESS) {
+        std::cerr << entities.status().reason() << std::endl;
+        return Status(StatusCode::ServerFailed, entities.status().reason());
+    }
 
     return Status::OK();
 }
@@ -179,21 +179,21 @@ GrpcClient::Search(const ::milvus::grpc::SearchParam& search_param,
 
 Status
 GrpcClient::GetCollectionInfo(const std::string& collection_name, ::milvus::grpc::Mapping& grpc_schema) {
-//    ClientContext context;
-//    ::milvus::grpc::CollectionName grpc_collectionname;
-//    grpc_collectionname.set_collection_name(collection_name);
-//    ::grpc::Status grpc_status = stub_->DescribeCollection(&context, grpc_collectionname, &grpc_schema);
-//
-//    if (!grpc_status.ok()) {
-//        std::cerr << "DescribeCollection rpc failed!" << std::endl;
-//        std::cerr << grpc_status.error_message() << std::endl;
-//        return Status(StatusCode::RPCFailed, grpc_status.error_message());
-//    }
-//
-//    if (grpc_schema.status().error_code() != grpc::SUCCESS) {
-//        std::cerr << grpc_schema.status().reason() << std::endl;
-//        return Status(StatusCode::ServerFailed, grpc_schema.status().reason());
-//    }
+    ClientContext context;
+    ::milvus::grpc::CollectionName grpc_collectionname;
+    grpc_collectionname.set_collection_name(collection_name);
+    ::grpc::Status grpc_status = stub_->DescribeCollection(&context, grpc_collectionname, &grpc_schema);
+
+    if (!grpc_status.ok()) {
+        std::cerr << "DescribeCollection rpc failed!" << std::endl;
+        std::cerr << grpc_status.error_message() << std::endl;
+        return Status(StatusCode::RPCFailed, grpc_status.error_message());
+    }
+
+    if (grpc_schema.status().error_code() != grpc::SUCCESS) {
+        std::cerr << grpc_schema.status().reason() << std::endl;
+        return Status(StatusCode::ServerFailed, grpc_schema.status().reason());
+    }
 
     return Status::OK();
 }
