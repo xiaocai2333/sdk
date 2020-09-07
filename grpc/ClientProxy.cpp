@@ -277,68 +277,64 @@ void
 CopyEntityToJson(::milvus::grpc::Entities& grpc_entities, JSON& json_entity,Mapping schema) {
     auto rows = grpc_entities.rows_data();
     auto row_num = grpc_entities.ids().size();
-    FieldValue data_value;
-    data_value.row_num = rows.size();
-    std::vector<std::string> field_names(schema.fields.size());
-    for (int i = 0; i < schema.fields.size(); i++) {
-        field_names[i] = schema.fields[i]->field_name;
-    }
+    std::vector<JSON> rows_json(row_num);
 
     for (int i = 0; i < row_num; i++) {
         auto row = rows[i].blob();
         int32_t offset = 0;
         for (int j = 0; j < schema.fields.size(); j++) {
+            rows_json[i]["id"] = grpc_entities.ids(i);
             switch (schema.fields[j]->field_type) {
                 case DataType::BOOL:
                 case DataType::INT8 :{
-                    data_value.int8_value[schema.fields[j]->field_name].push_back(row[offset]);
+                    rows_json[i][schema.fields[j]->field_name] = row[offset];
                     offset += 1;
                     break;
                 }
                 case DataType::INT16:{
                     auto int16_ptr = reinterpret_cast<const int16_t *>(row.data() + offset);
-                    data_value.int16_value[schema.fields[j]->field_name].push_back(int16_ptr[0]);
+                    rows_json[i][schema.fields[j]->field_name] = int16_ptr[0];
                     offset += 2;
                     break;
                 }
                 case DataType::INT32:{
                     auto int32_ptr = reinterpret_cast<const int32_t *>(row.data() + offset);
-                    data_value.int32_value[schema.fields[j]->field_name].push_back(int32_ptr[0]);
+                    rows_json[i][schema.fields[j]->field_name] = int32_ptr[0];
                     offset += 4;
                     break;
                 }
                 case DataType::INT64:{
                     auto int64_ptr = reinterpret_cast<const int32_t *>(row.data() + offset);
-                    data_value.int64_value[schema.fields[j]->field_name].push_back(int64_ptr[0]);
+                    rows_json[i][schema.fields[j]->field_name] = int64_ptr[0];
                     offset += 8;
                     break;
                 }
                 case DataType::FLOAT:{
                     auto float_ptr = reinterpret_cast<const float *>(row.data() + offset);
-                    data_value.float_value[schema.fields[j]->field_name].push_back(float_ptr[0]);
+                    rows_json[i][schema.fields[j]->field_name] = float_ptr[0];
                     offset += sizeof(float);
                     break;
                 }
                 case DataType::DOUBLE:{
                     auto double_ptr = reinterpret_cast<const float *>(row.data() + offset);
-                    data_value.float_value[schema.fields[j]->field_name].push_back(double_ptr[0]);
+                    rows_json[i][schema.fields[j]->field_name] = double_ptr[0];
                     offset += sizeof(double);
                     break;
                 }
                 case DataType::VECTOR_BINARY:{
                     const byte *begin = reinterpret_cast< const byte * >( rows.data()) + offset;
                     const byte *end = begin + schema.fields[j]->dim;
-                    data_value.vector_value[schema.fields[j]->field_name][i].binary_data.insert(
-                            std::end(data_value.vector_value[schema.fields[j]->field_name][i].binary_data),
-                            begin,
-                            end);
+                    std::vector<byte> binary_data;
+                    binary_data.insert(std::begin(binary_data),begin,end);
+                    rows_json[i][schema.fields[j]->field_name] = binary_data;
                     offset += schema.fields[j]->dim;
                 }
                 case DataType::VECTOR_FLOAT: {
                     const float *begin = reinterpret_cast< const float * >( rows.data()) + offset;
                     const float *end = begin + schema.fields[j]->dim;
-                    data_value.vector_value[schema.fields[j]->field_name][i].float_data.insert(
-                            std::end(data_value.vector_value[schema.fields[j]->field_name][i].float_data),
+                    std::vector<float> float_data;
+                    float_data.insert(
+                            std::begin(float_data),
                             begin,
                             end);
                     offset += schema.fields[j]->dim * sizeof(float);
@@ -350,32 +346,7 @@ CopyEntityToJson(::milvus::grpc::Entities& grpc_entities, JSON& json_entity,Mapp
         }
     }
 
-    for (int i = 0; i < row_num; i++) {
-        JSON one_json;
-        one_json["id"] = grpc_entities.ids(i);
-        if (grpc_entities.valid_row(i)) {
-            for (const auto& name : field_names) {
-                if (data_value.int8_value.find(name) != data_value.int8_value.end()) {
-                    one_json[name] = data_value.int8_value.at(name)[i];
-                } else if (data_value.int16_value.find(name) != data_value.int16_value.end()){
-                    one_json[name] = data_value.int16_value.at(name)[i];
-                } else if (data_value.int32_value.find(name) != data_value.int32_value.end()) {
-                    one_json[name] = data_value.int32_value.at(name)[i];
-                } else if (data_value.int64_value.find(name) != data_value.int64_value.end()) {
-                    one_json[name] = data_value.int64_value.at(name)[i];
-                } else if (data_value.float_value.find(name) != data_value.float_value.end()) {
-                    one_json[name] = data_value.float_value.at(name)[i];
-                } else if (data_value.double_value.find(name) != data_value.double_value.end()) {
-                    one_json[name] = data_value.double_value.at(name)[i];
-                } else if (data_value.vector_value.find(name) != data_value.vector_value.end()) {
-                    if (!(data_value.vector_value.at(name)[i].float_data.empty())) {
-                        one_json[name] = data_value.vector_value.at(name)[i].float_data;
-                    } else if (!(data_value.vector_value.at(name)[i].binary_data.empty())) {
-                        one_json[name] = data_value.vector_value.at(name)[i].binary_data;
-                    }
-                }
-            }
-        }
+    for (auto one_json : rows_json) {
         json_entity.emplace_back(one_json);
     }
 }
