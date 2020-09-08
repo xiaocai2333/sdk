@@ -259,7 +259,7 @@ CopyFieldValue(const FieldValue &field_value, milvus::grpc::InsertParam &insert_
                 }
             } else {
                 grpc_field->set_type(milvus::grpc::DataType::VECTOR_BINARY);
-                grpc_field->set_dim(field_data[0].binary_data.size() / sizeof(float));
+                grpc_field->set_dim(field_data[0].binary_data.size());
                 for (int i = 0; i < data_size; i++) {
                     binary_data[i].insert(std::end(binary_data[i]), field_data[i].binary_data.data(),
                                           field_data[i].binary_data.data() + field_data[i].binary_data.size());
@@ -322,7 +322,7 @@ CopyEntityToJson(::milvus::grpc::Entities& grpc_entities, JSON& json_entity,Mapp
                     break;
                 }
                 case DataType::VECTOR_BINARY:{
-                    const byte *begin = reinterpret_cast< const byte * >( rows.data()) + offset;
+                    const byte *begin = reinterpret_cast< const byte * >( row.data() + offset);
                     const byte *end = begin + schema.fields[j]->dim;
                     std::vector<byte> binary_data;
                     binary_data.insert(std::begin(binary_data),begin,end);
@@ -330,13 +330,11 @@ CopyEntityToJson(::milvus::grpc::Entities& grpc_entities, JSON& json_entity,Mapp
                     offset += schema.fields[j]->dim;
                 }
                 case DataType::VECTOR_FLOAT: {
-                    const float *begin = reinterpret_cast< const float * >( rows.data()) + offset;
+                    const float *begin = reinterpret_cast< const float * >( row.data() + offset);
                     const float *end = begin + schema.fields[j]->dim;
                     std::vector<float> float_data;
-                    float_data.insert(
-                            std::begin(float_data),
-                            begin,
-                            end);
+                    float_data.insert(std::begin(float_data),begin,end);
+                    rows_json[i][schema.fields[j]->field_name] = float_data;
                     offset += schema.fields[j]->dim * sizeof(float);
                     break;
                 }
