@@ -72,8 +72,7 @@ set(grpc_service_files
         grpc-gen/gen-milvus/milvus.grpc.pb.cc
         grpc-gen/gen-milvus/milvus.pb.cc
         grpc-gen/gen-status/status.grpc.pb.cc
-        grpc-gen/gen-status/status.pb.cc
-        examples/DebugWithXiaoHong/test.cpp)
+        grpc-gen/gen-status/status.pb.cc)
 
 set(grpc_lib
         grpcpp_channelz
@@ -99,6 +98,7 @@ target_link_libraries(milvus_sdk
 install(TARGETS milvus_sdk DESTINATION lib)
 
 add_subdirectory(examples)
+add_subdirectory(unittest)
 
 find_package(Python COMPONENTS Interpreter Development)
 find_package(ClangTools)
