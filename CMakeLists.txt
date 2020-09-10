@@ -198,3 +198,5 @@ if (${CLANG_TIDY_FOUND})
             ${MILVUS_LINT_QUIET})
 endif ()
 
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/test )
+
