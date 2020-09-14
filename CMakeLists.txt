@@ -97,7 +97,7 @@ target_link_libraries(milvus_sdk
 
 install(TARGETS milvus_sdk DESTINATION lib)
 
-add_subdirectory(examples)
+#add_subdirectory(examples)
 add_subdirectory(unittest)
 
 find_package(Python COMPONENTS Interpreter Development)

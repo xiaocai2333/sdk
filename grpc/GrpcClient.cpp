@@ -117,7 +117,7 @@ GrpcClient::Insert(const ::milvus::grpc::InsertParam& insert_param, ::milvus::gr
         return Status(StatusCode::RPCFailed, grpc_status.error_message());
     }
     if (entitiy_ids.status().error_code() != grpc::SUCCESS) {
-        std::cerr << entitiy_ids.status().reason() << std::endl;
+//        std::cerr << entitiy_ids.status().reason() << std::endl;
         return Status(StatusCode::ServerFailed, entitiy_ids.status().reason());
     }
 
